@@ -10,41 +10,8 @@ namespace DHCPSzimulacio
     class Program
     {
         static List<string> excluded = new List<string>();
-
-        static string CimEggyelNo(string cim)
-        {
-
-            string[] adat = cim.Split('.');
-            int okt4 = int.Parse(adat[3]);
-
-            if (okt4 < 255)
-            {
-                okt4++;
-            }
-
-            string vissza = adat[0] + "." + adat[1] + "." + adat[2] + "." + okt4.ToString();
-            return vissza;
-        }
-        //192.168.10.100 --> 192.168.10.101
-        /*szetvagni a pontok mentek
-         * az utolsot inte konvertalni
-         * egyet hozaadni 255-ot ne lepje tul
-         * osszefuzni string-e
-         */
-
-        static void Main(string[] args)
-        {
-            beolvasexcluded();
-            Console.WriteLine(CimEggyelNo("192.168.10.100"));
-
-            //foreach (var e in excluded)
-            //{
-            //    Console.WriteLine(e);
-            //}
-
-            Console.WriteLine("\nVége...");
-            Console.ReadKey();
-        }
+        static Dictionary<string, string> dhcp = new Dictionary<string, string>();
+        static Dictionary<string, string> reserved = new Dictionary<string, string>();
         static void beolvasexcluded()
         {
             try
@@ -66,13 +33,67 @@ namespace DHCPSzimulacio
                     file.Close();
                 }
                 file.Close();
-                
-                
+
+
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.Message);
             }
         }
+        static string CimEggyelNo(string cim)
+        {
+
+            string[] adat = cim.Split('.');
+            int okt4 = int.Parse(adat[3]);
+
+            if (okt4 < 255)
+            {
+                okt4++;
+            }
+
+            string vissza = adat[0] + "." + adat[1] + "." + adat[2] + "." + okt4.ToString();
+            return vissza;
+        }
+        //192.168.10.100 --> 192.168.10.101
+        /*szetvagni a pontok mentek
+         * az utolsot inte konvertalni
+         * egyet hozaadni 255-ot ne lepje tul
+         * osszefuzni string-e
+         */
+        static void beolvasDictionary(Dictionary<string,string> d, string filenev)
+        {
+            try
+            {
+                StreamReader file = new StreamReader(filenev);
+                while (!file.EndOfStream)
+                {
+                    string[] adat = file.ReadLine().Split(';');
+                    d.Add(adat[0], adat[1]);
+                }
+                file.Close();
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+            }
+        }
+        static void Main(string[] args)
+        {
+            beolvasexcluded();
+
+            beolvasDictionary(dhcp, "dhcp.csv");
+            beolvasDictionary(reserved, "reserved.csv");
+
+            foreach (var e in dhcp)
+            {
+                Console.WriteLine(e);
+            }
+
+            Console.WriteLine("\nVége...");
+            Console.ReadKey();
+        }
+        
     }
 }
